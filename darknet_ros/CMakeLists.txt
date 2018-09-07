@@ -121,6 +121,20 @@ else()
 	message(WARNING "Undefined DARKNET_HOME env var, this package will not be compiled.")
 endif()
 
+if(CATKIN_ENABLE_TESTING)
+	find_package(rostest REQUIRED)
+
+	# Object detection in images.
+	add_rostest_gtest(${PROJECT_NAME}_object_detection-test
+		test/object_detection.test
+		test/test_main.cpp
+		test/ObjectDetection.cpp
+		)
+	target_link_libraries(${PROJECT_NAME}_object_detection-test
+		${catkin_LIBRARIES}
+		)
+endif()
+
 add_dependencies(${PROJECT_NAME}_lib
 	darknet_ros_msgs_generate_messages_cpp
 	)

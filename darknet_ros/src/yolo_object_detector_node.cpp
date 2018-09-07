@@ -10,10 +10,11 @@
 #include <ros/ros.h>
 
 int main(int argc, char** argv) {
-  ros::init(argc, argv, "darknet_ros");
-  ros::NodeHandle nodeHandle("~");
-  darknet_ros::YoloObjectDetector yoloObjectDetector(nodeHandle);
+    ros::init(argc, argv, "darknet_ros");
+    ros::NodeHandle nodeHandle("~");
+    ros::Rate rate (60);
+    darknet_ros::YoloObjectDetector yoloObjectDetector(nodeHandle);
 
-  ros::spin();
-  return 0;
+    ros::spin();
+    return 1;
 }

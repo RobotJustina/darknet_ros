@@ -207,6 +207,11 @@ class YoloObjectDetector
   int actionId_;
   boost::shared_mutex mutexActionStatus_;
 
+  std::thread detect_thread;
+  std::thread fetch_thread;
+  int count = 0;
+  bool initWindow = false;
+
   // double getWallTime();
 
   int sizeNetwork(network *net);
