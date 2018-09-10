@@ -254,6 +254,8 @@ namespace darknet_ros {
                 if (viewImage_) {
                     displayInThread(0);
                 }
+                else
+                    copyToCv(buff_[(buffIndex_ + 1)%3], ipl_);
                 publishInThread();
             } else {
                 char name[256];
@@ -336,6 +338,8 @@ namespace darknet_ros {
             if (viewImage_) {
                 displayInThread(0);
             }
+            else
+                copyToCv(buff_[(buffIndex_ + 1)%3], ipl_);
             publishInThread();
         } else {
             char name[256];
@@ -408,6 +412,21 @@ namespace darknet_ros {
             if(l.type == YOLO || l.type == REGION || l.type == DETECTION){
                 memcpy(predictions_[demoIndex_] + count, net->layers[i].output, sizeof(float) * l.outputs);
                 count += l.outputs;
+            }
+        }
+    }
+    
+    void YoloObjectDetector::copyToCv(image p, IplImage *disp){
+        int x,y,k;
+        if(p.c == 3) rgbgr_image(p);
+        int step = disp->widthStep;
+        for(y = 0; y < p.h; ++y){
+            for(x = 0; x < p.w; ++x){
+                for(k= 0; k < p.c; ++k){
+                    assert(x < p.w && y < p.h && k < p.c);
+                    float pixel = p.data[k*p.h*p.w + y*p.w + x];
+                    disp->imageData[y*step + x*p.c + k] = (unsigned char)(pixel*255);
+                }
             }
         }
     }

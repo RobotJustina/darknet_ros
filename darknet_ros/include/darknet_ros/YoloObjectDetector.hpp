@@ -217,6 +217,8 @@ class YoloObjectDetector
   int sizeNetwork(network *net);
 
   void rememberNetwork(network *net);
+  
+  void copyToCv(image p, IplImage *disp);
 
   detection *avgPredictions(network *net, int *nboxes);
 
