@@ -125,7 +125,7 @@ namespace darknet_ros {
         setupNetwork(cfg, weights, data, thresh, detectionNames, numClasses_,
                 0, 0, 1, 0.5, 0, 0, 0, 0);
         //yoloThread_ = std::thread(&YoloObjectDetector::yolo, this);
-       
+
 
 
         srand(2222222);
@@ -138,7 +138,7 @@ namespace darknet_ros {
         avg_ = (float *) calloc(demoTotal_, sizeof(float));
         layer l = net_->layers[net_->n - 1];
         roiBoxes_ = (darknet_ros::RosBox_ *) calloc(l.w * l.h * l.n, sizeof(darknet_ros::RosBox_));
-         
+
         demoTime_ = what_time_is_it_now();
 
 
@@ -231,17 +231,19 @@ namespace darknet_ros {
                 buffLetter_[0] = letterbox_image(buff_[0], net_->w, net_->h);
                 buffLetter_[1] = letterbox_image(buff_[0], net_->w, net_->h);
                 buffLetter_[2] = letterbox_image(buff_[0], net_->w, net_->h);
-                ipl_ = cvCreateImage(cvSize(buff_[0].w, buff_[0].h), IPL_DEPTH_8U, buff_[0].c);
+                //ipl_ = cvCreateImage(cvSize(buff_[0].w, buff_[0].h), IPL_DEPTH_8U, buff_[0].c);
 
-                if (!demoPrefix_ && viewImage_) {
-                    cvNamedWindow("YOLO V3", CV_WINDOW_NORMAL);
-                    if (fullScreen_) {
-                        cvSetWindowProperty("YOLO V3", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
-                    } else {
-                        cvMoveWindow("YOLO V3", 0, 0);
-                        cvResizeWindow("YOLO V3", 640, 480);
-                    }
-                }
+                /*if (!demoPrefix_ && viewImage_) {
+                  cvNamedWindow("YOLO V3", CV_WINDOW_NORMAL);
+                  if (fullScreen_) {
+                  cvSetWindowProperty("YOLO V3", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
+                  } else {
+                  cvMoveWindow("YOLO V3", 0, 0);
+                  cvResizeWindow("YOLO V3", 640, 480);
+                  }
+                  }*/
+                if (!demoPrefix_ && viewImage_)
+                    make_window("YOLO V3", 640, 480, fullScreen_);
                 initWindow = true;
             }
 
@@ -254,8 +256,8 @@ namespace darknet_ros {
                 if (viewImage_) {
                     displayInThread(0);
                 }
-                else
-                    copyToCv(buff_[(buffIndex_ + 1)%3], ipl_);
+                //else
+                //    copyToCv(buff_[(buffIndex_ + 1)%3], ipl_);
                 publishInThread();
             } else {
                 char name[256];
@@ -315,20 +317,22 @@ namespace darknet_ros {
             buffLetter_[0] = letterbox_image(buff_[0], net_->w, net_->h);
             buffLetter_[1] = letterbox_image(buff_[0], net_->w, net_->h);
             buffLetter_[2] = letterbox_image(buff_[0], net_->w, net_->h);
-            ipl_ = cvCreateImage(cvSize(buff_[0].w, buff_[0].h), IPL_DEPTH_8U, buff_[0].c);
+            //ipl_ = cvCreateImage(cvSize(buff_[0].w, buff_[0].h), IPL_DEPTH_8U, buff_[0].c);
 
-            if (!demoPrefix_ && viewImage_) {
-                cvNamedWindow("YOLO V3", CV_WINDOW_NORMAL);
-                if (fullScreen_) {
-                    cvSetWindowProperty("YOLO V3", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
-                } else {
-                    cvMoveWindow("YOLO V3", 0, 0);
-                    cvResizeWindow("YOLO V3", 640, 480);
-                }
-            }
+            /*if (!demoPrefix_ && viewImage_) {
+              cvNamedWindow("YOLO V3", CV_WINDOW_NORMAL);
+              if (fullScreen_) {
+              cvSetWindowProperty("YOLO V3", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
+              } else {
+              cvMoveWindow("YOLO V3", 0, 0);
+              cvResizeWindow("YOLO V3", 640, 480);
+              }
+              }*/
+            if (!demoPrefix_ && viewImage_)
+                make_window("YOLO V3", 640, 480, fullScreen_);
             initWindow = true;
         }
-        
+
         buffIndex_ = (buffIndex_ + 1) % 3;
         fetch_thread = std::thread(&YoloObjectDetector::fetchInThread, this);
         detect_thread = std::thread(&YoloObjectDetector::detectInThread, this);
@@ -338,8 +342,8 @@ namespace darknet_ros {
             if (viewImage_) {
                 displayInThread(0);
             }
-            else
-                copyToCv(buff_[(buffIndex_ + 1)%3], ipl_);
+            //else
+            //    copyToCv(buff_[(buffIndex_ + 1)%3], ipl_);
             publishInThread();
         } else {
             char name[256];
@@ -415,7 +419,7 @@ namespace darknet_ros {
             }
         }
     }
-    
+
     void YoloObjectDetector::copyToCv(image p, IplImage *disp){
         int x,y,k;
         if(p.c == 3) rgbgr_image(p);
@@ -457,7 +461,7 @@ namespace darknet_ros {
 
         layer l = net_->layers[net_->n - 1];
         float *X = buffLetter_[(buffIndex_ + 2) % 3].data;
-        float *prediction = network_predict(net_, X);
+        network_predict(net_, X);
 
         rememberNetwork(net_);
         detection *dets = 0;
@@ -519,9 +523,9 @@ namespace darknet_ros {
         // create array to store found bounding boxes
         // if no object detected, make sure that ROS knows that num = 0
         if (count == 0) {
-            roiBoxes_[0].num = 0;
+        roiBoxes_[0].num = 0;
         } else {
-            roiBoxes_[0].num = count;
+        roiBoxes_[0].num = count;
         }
 
         free_detections(dets, nboxes);
@@ -532,12 +536,14 @@ namespace darknet_ros {
 
     void *YoloObjectDetector::fetchInThread()
     {
+        free_image(buff_[buffIndex_]);
         IplImage* ROS_img = getIplImage();
-        ipl_into_image(ROS_img, buff_[buffIndex_]);
+        //ipl_into_image(ROS_img, buff_[buffIndex_]);
+        buff_[buffIndex_] = ipl_to_image(ROS_img);
         /*{
-            boost::shared_lock<boost::shared_mutex> lock(mutexImageCallback_);
-            buffId_[buffIndex_] = actionId_;
-        }*/
+          boost::shared_lock<boost::shared_mutex> lock(mutexImageCallback_);
+          buffId_[buffIndex_] = actionId_;
+          }*/
         rgbgr_image(buff_[buffIndex_]);
         letterbox_image_into(buff_[buffIndex_], net_->w, net_->h, buffLetter_[buffIndex_]);
         return 0;
@@ -545,8 +551,7 @@ namespace darknet_ros {
 
     void *YoloObjectDetector::displayInThread(void *ptr)
     {
-        show_image_cv(buff_[(buffIndex_ + 1)%3], "YOLO V3", ipl_);
-        int c = cvWaitKey(waitKeyDelay_);
+        int c = show_image_cv(buff_[(buffIndex_ + 1)%3], "YOLO V3", 1);
         if (c != -1) c = c%256;
         if (c == 27) {
             demoDone_ = 1;
@@ -633,7 +638,8 @@ namespace darknet_ros {
         buffLetter_[0] = letterbox_image(buff_[0], net_->w, net_->h);
         buffLetter_[1] = letterbox_image(buff_[0], net_->w, net_->h);
         buffLetter_[2] = letterbox_image(buff_[0], net_->w, net_->h);
-        ipl_ = cvCreateImage(cvSize(buff_[0].w, buff_[0].h), IPL_DEPTH_8U, buff_[0].c);
+        // TODO REVIEW THIS
+        //ipl_ = cvCreateImage(cvSize(buff_[0].w, buff_[0].h), IPL_DEPTH_8U, buff_[0].c);
 
         int count = 0;
 
@@ -697,7 +703,7 @@ namespace darknet_ros {
     void *YoloObjectDetector::publishInThread()
     {
         // Publish image.
-        cv::Mat cvImage = cv::cvarrToMat(ipl_);
+        cv::Mat cvImage = image_to_mat(buff_[(buffIndex_ + 1)%3]);
         if (!publishDetectionImage(cv::Mat(cvImage))) {
             ROS_DEBUG("Detection image has not been broadcasted.");
         }
@@ -746,7 +752,7 @@ namespace darknet_ros {
             std_msgs::Int8 msg;
             msg.data = 0;
             objectPublisher_.publish(msg);
-            
+
             boundingBoxesResults_.header.stamp = ros::Time::now();
             boundingBoxesResults_.header.frame_id = "detection";
             boundingBoxesResults_.image_header = imageHeader_;

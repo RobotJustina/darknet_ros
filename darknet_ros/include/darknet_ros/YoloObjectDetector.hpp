@@ -40,9 +40,13 @@
 
 // Darknet.
 #ifdef GPU
-#include "cuda_runtime.h"
-#include "curand.h"
-#include "cublas_v2.h"
+    #define BLOCK 512
+    #include "cuda_runtime.h"
+    #include "curand.h"
+    #include "cublas_v2.h"
+    #ifdef CUDNN
+        #include "cudnn.h"
+    #endif
 #endif
 
 extern "C" {
@@ -53,13 +57,16 @@ extern "C" {
 #include "utils.h"
 #include "parser.h"
 #include "box.h"
+//#include "opencv_image"
+#include "image.h"
 #include "darknet_ros/image_interface.h"
 #include <sys/time.h>
 }
 
 extern "C" void ipl_into_image(IplImage* src, image im);
 extern "C" image ipl_to_image(IplImage* src);
-extern "C" void show_image_cv(image p, const char *name, IplImage *disp);
+extern "C" cv::Mat image_to_mat(image im);
+extern "C" int show_image_cv(image p, const char *name, int ms);
 
 namespace darknet_ros {
 
