@@ -523,9 +523,9 @@ namespace darknet_ros {
         // create array to store found bounding boxes
         // if no object detected, make sure that ROS knows that num = 0
         if (count == 0) {
-        roiBoxes_[0].num = 0;
+            roiBoxes_[0].num = 0;
         } else {
-        roiBoxes_[0].num = count;
+            roiBoxes_[0].num = count;
         }
 
         free_detections(dets, nboxes);
