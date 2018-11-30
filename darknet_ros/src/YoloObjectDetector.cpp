@@ -228,6 +228,9 @@ namespace darknet_ros {
                 buff_[0] = ipl_to_image(ROS_img);
                 buff_[1] = copy_image(buff_[0]);
                 buff_[2] = copy_image(buff_[0]);
+                rgbgr_image(buff_[0]);
+                rgbgr_image(buff_[0]);
+                rgbgr_image(buff_[0]);
                 buffLetter_[0] = letterbox_image(buff_[0], net_->w, net_->h);
                 buffLetter_[1] = letterbox_image(buff_[0], net_->w, net_->h);
                 buffLetter_[2] = letterbox_image(buff_[0], net_->w, net_->h);
